@@ -64,24 +64,28 @@ pipeline{
         }
     }
     post {
-     always {
-        emailext attachLog: true,
-            subject: "'${currentBuild.result}'",
-            body: "Project: ${env.JOB_NAME}
-" +
-                "Build Number: ${env.BUILD_NUMBER}
-" +
-                "URL: ${env.BUILD_URL}
-",
-            to: 'dattnt0209@gmail.com',
-            attachmentsPattern: 'trivy.txt'
+        always {
+            emailext(
+                attachLog: true,
+                subject: "${currentBuild.currentResult}",
+                body: """\
+    Project: ${env.JOB_NAME}
+    Build Number: ${env.BUILD_NUMBER}
+    URL: ${env.BUILD_URL}
+    """,
+                to: 'dattnt0209@gmail.com',
+                attachmentsPattern: 'trivy.txt'
+            )
 
-        slackSend(
-            channel: '#jenkins',
-            color: COLOR_MAP[currentBuild.currentResult],
-            message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME}\n" +
-                     "Build ${env.BUILD_NUMBER}\n" +
-                     "More info at: ${env.BUILD_URL}"
+            slackSend(
+                channel: '#jenkins',
+                color: COLOR_MAP[currentBuild.currentResult],
+                message: """\
+    *${currentBuild.currentResult}:* Job ${env.JOB_NAME}
+    Build ${env.BUILD_NUMBER}
+    More info at: ${env.BUILD_URL}
+    """
+            )
         }
     }
 }
