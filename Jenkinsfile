@@ -12,7 +12,7 @@ pipeline{
         }
         stage ('Checkout SCM') {
             steps {
-                git branch: 'main', url: 'https://github.com/cyberops-homelab/jpetstore.git'
+                git branch: 'master', url: 'https://github.com/cyberops-homelab/jpetstore.git'
             }
         }
         stage ('Maven Compile') {
