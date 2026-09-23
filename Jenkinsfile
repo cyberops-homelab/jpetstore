@@ -4,6 +4,9 @@ pipeline{
         jdk 'jdk17'
         maven 'maven3'
     }
+    environment {
+        DOCKER_IMAGE: "cyber0ps/petstore"
+    }
     stages{
         stage ('Clean Workspace'){
             steps{
@@ -15,9 +18,9 @@ pipeline{
                 git branch: 'master', url: 'https://github.com/cyberops-homelab/jpetstore.git'
             }
         }
-        stage ('Maven Compile') {
+        stage ('Maven Build and Test') {
             steps {
-                sh 'mvn clean verify DskipTests=true'
+                sh 'mvn clean verify'
             }
         }
         stage("Sonarqube Analysis "){
@@ -35,5 +38,25 @@ pipeline{
                 }
            }
         }
+        stage('Docker Build Image'){
+            steps{
+                sh '''
+                    docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                '''
+            }
+        }
+        stage("TRIVY Scan Image"){
+            steps{
+                sh "trivy image ${DOCKER_IMAGE}:${BUILD_NUMBER} > trivy.txt"
+            }
+        }
+        stage("Docker Push Image"){
+            steps{
+                withDockerRegistry(credentialsId: 'docker-hub'){
+                    sh "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                }
+            }
+        }
+        
    }
 }
