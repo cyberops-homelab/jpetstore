@@ -17,13 +17,23 @@ pipeline{
         }
         stage ('Maven Compile') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean verify'
             }
         }
-        stage ('Maven Test') {
-            steps {
-                sh 'mvn test'
+        stage("Sonarqube Analysis "){
+            steps{
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectName=PetStore \
+                    -Dsonar.projectKey=PetStore '''
+                }
             }
+        }
+        stage("Quality Gate"){
+            steps {
+                script {
+                  waitForQualityGate abortPipeline: true, credentialsId: 'sonar-token'
+                }
+           }
         }
    }
 }
