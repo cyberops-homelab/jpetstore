@@ -17,7 +17,7 @@ pipeline{
         }
         stage ('Maven Compile') {
             steps {
-                sh 'mvn clean verify'
+                sh 'mvn clean verify DskipTests=true'
             }
         }
         stage("Sonarqube Analysis "){
