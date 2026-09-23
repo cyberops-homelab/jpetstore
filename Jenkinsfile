@@ -5,7 +5,7 @@ pipeline{
         maven 'maven3'
     }
     environment {
-        DOCKER_IMAGE: "cyber0ps/petstore"
+        DOCKER_IMAGE= "cyber0ps/petstore"
     }
     stages{
         stage ('Clean Workspace'){
@@ -52,7 +52,7 @@ pipeline{
         }
         stage("Docker Push Image"){
             steps{
-                withDockerRegistry(credentialsId: 'docker-hub'){
+                withRegistry(url: "https://index.docker.io/v1/", credentialsId: 'docker-hub'){
                     sh "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
                 }
             }
