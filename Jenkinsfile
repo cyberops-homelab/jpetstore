@@ -1,3 +1,8 @@
+def COLOR_MAP = [
+    'FAILURE': 'danger',
+    'SUCCESS': 'good'
+]
+
 pipeline{
     agent any
     tools {
@@ -20,7 +25,7 @@ pipeline{
         }
         stage ('Maven Build and Test') {
             steps {
-                sh 'mvn clean verify DskipTests=true'
+                sh 'mvn clean verify -DskipTests=true'
             }
         }
         stage("Sonarqube Analysis "){
@@ -57,6 +62,26 @@ pipeline{
                 }
             }
         }
-        
-   }
+    }
+    post {
+     always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}
+" +
+                "Build Number: ${env.BUILD_NUMBER}
+" +
+                "URL: ${env.BUILD_URL}
+",
+            to: 'dattnt0209@gmail.com',
+            attachmentsPattern: 'trivy.txt'
+
+        slackSend(
+            channel: '#jenkins',
+            color: COLOR_MAP[currentBuild.currentResult],
+            message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME}\n" +
+                     "Build ${env.BUILD_NUMBER}\n" +
+                     "More info at: ${env.BUILD_URL}"
+        }
+    }
 }
